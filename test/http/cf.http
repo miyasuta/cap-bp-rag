@@ -1,0 +1,8 @@
+@server=ebdf948dtrial-dev-cap-bp-rag-srv.cfapps.us10-001.hana.ondemand.com
+@username=alice
+@password=
+
+
+### BusinessPartners
+# @name BusinessPartners_GET
+GET {{server}}/odata/v4/business-partner/BusinessPartners

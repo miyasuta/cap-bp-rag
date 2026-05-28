@@ -5,7 +5,7 @@
 
 ### BusinessPartners
 # @name BusinessPartners_GET
-GET {{server}}/odata/v4/business-partner/BusinessPartners
+GET {{server}}/odata/v4/business-partner/BusinessPartnerViewer
 Authorization: Basic {{username}}:{{password}}
 
 
@@ -22,27 +22,10 @@ Authorization: Basic {{username}}:{{password}}
   "text": "text-30448324"
 }
 
-
-### BusinessPartners
-# @name BusinessPartners_PATCH
-PATCH {{server}}/odata/v4/business-partner/BusinessPartners/30448324-31e4-43e7-a906-25e5905891dd
-Content-Type: application/json
+### Similarity Search
+GET {{server}}/odata/v4/business-partner/similaritySearch(query='What is the full data of business partner Yasutake?')
 Authorization: Basic {{username}}:{{password}}
 
-{
-  "businessPartnerUUID": "30448324-31e4-43e7-a906-25e5905891dd",
-  "businessPartnerID": "D-30448324",
-  "fullData": "fullData-30448324",
-  "text": "text-30448324",
-  "createdAt": "2002-06-05T15:00:00.000Z",
-  "createdBy": "createdBy.i4m2s@example.org",
-  "modifiedAt": "2023-07-24T15:00:00.000Z",
-  "modifiedBy": "modifiedBy.i4m2s@example.org"
-}
-
-
-### BusinessPartners
-# @name BusinessPartners_DELETE
-DELETE {{server}}/odata/v4/business-partner/BusinessPartners/30448324-31e4-43e7-a906-25e5905891dd
+### Delete All
+POST {{server}}/odata/v4/business-partner/deleteAll
 Content-Type: application/json
-Authorization: Basic {{username}}:{{password}}

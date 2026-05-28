@@ -1,9 +1,11 @@
 const cds = require('@sap/cds')
+const { OpenAIUtil } = require('./utils/OpenAIUtil')
 
 module.exports = class BusinessPartnerService extends cds.ApplicationService {
-  init() {
-
+  async init() {
     const { BusinessPartners } = cds.entities('BusinessPartnerService')
+    const db = await cds.connect.to('db')
+    const { BusinessPartner } = db.entities
 
     this.on('CREATE', BusinessPartners, async (req, next) => {
       const bp = req.data
@@ -19,10 +21,10 @@ module.exports = class BusinessPartnerService extends cds.ApplicationService {
         bp.textEmbedding = `[${arr.join(',')}]`;
         delete bp.textEmbeddingStr;
       }
-      await UPSERT.into(BusinessPartners).entries([bp])
+      await UPSERT.into(BusinessPartner).entries([bp]) // insert into DB
 
       // Return updated business partner except embedding
-      return SELECT.one.from(BusinessPartners)
+      return SELECT.one.from(BusinessPartner)
         .columns('businessPartnerUUID',
           'businessPartnerID',
           'fullData',
@@ -38,8 +40,26 @@ module.exports = class BusinessPartnerService extends cds.ApplicationService {
       const { query } = req.data
       console.log('On similaritySearch', query)
 
-      
-      return []
+      const openai = new OpenAIUtil()
+      const queryEmbedding = await openai.getEmbedding(query)
+
+      const result = await SELECT.from(BusinessPartner)
+        .columns`businessPartnerID, 
+                                            fullData, 
+                                            cosine_similarity(
+                                              textEmbedding, to_real_vector(
+                                              ${JSON.stringify(queryEmbedding)}
+                                            )) as similarityScore`
+        .orderBy`similarityScore desc`
+        .limit(3)
+      return result
+    })
+
+    this.on('deleteAll', async (req) => {
+      const db = await cds.connect.to('db')
+      const { BusinessPartner } = db.entities
+      await DELETE.from(BusinessPartner)
+      return 'All business partners deleted'
     })
 
     return super.init()

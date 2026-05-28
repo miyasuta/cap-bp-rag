@@ -8,4 +8,5 @@ entity BusinessPartner: managed {
   fullData: String(1000);
   text: String(1000);
   textEmbedding : Vector(1536);
+  textEmbeddingStr : String;
 }

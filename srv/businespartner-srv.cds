@@ -5,13 +5,12 @@ service BusinessPartnerService {
   @insertonly
   entity BusinessPartners      as
     projection on db.BusinessPartner {
-      *,
-      virtual null as textEmbeddingStr : String
+      *
     }
     excluding {
       textEmbedding
     };
-    
+
   @readonly
   entity BusinessPartnerViewer as
     projection on db.BusinessPartner {
@@ -26,6 +25,10 @@ service BusinessPartnerService {
     fullData          : String(1000);
     similarityScore   : String;
   }
+
+  function askQuestion(question: String) returns String;
+
+  action deleteAll() returns String;
 }
 
 annotate BusinessPartnerService with @requires: 'any'

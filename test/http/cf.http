@@ -6,3 +6,6 @@
 ### BusinessPartners
 # @name BusinessPartners_GET
 GET {{server}}/odata/v4/business-partner/BusinessPartners
+
+###
+GET {{server}}/odata/v4/business-partner/BusinessPartnerViewer

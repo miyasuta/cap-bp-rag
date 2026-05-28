@@ -35,7 +35,10 @@ module.exports = class BusinessPartnerService extends cds.ApplicationService {
     })
 
     this.on('similaritySearch', async (req) => {
-      console.log('On similaritySearch', req.data)
+      const { query } = req.data
+      console.log('On similaritySearch', query)
+
+      
       return []
     })
 

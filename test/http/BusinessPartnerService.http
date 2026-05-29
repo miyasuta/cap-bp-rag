@@ -28,7 +28,7 @@ Authorization: Basic {{username}}:{{password}}
 Content-Type: application/json
 
 {
-  "query": "What is the full data of business partner Yasutake?"
+  "query": "Find address of Mio Yasutake"
 }
 
 ### Ask a Question
@@ -37,7 +37,7 @@ Authorization: Basic {{username}}:{{password}}
 Content-Type: application/json
 
 {
-  "query": "Where is Mio Yasutake located?"
+  "query": "Find business partners located in Asia Pacific region. List their names and countries."
 }
 
 

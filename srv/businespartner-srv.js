@@ -62,7 +62,7 @@ module.exports = class BusinessPartnerService extends cds.ApplicationService {
     this.on('ask', async (req) => {
       const { query } = req.data
       try {
-        const context = await this.findSimilar(query)
+        const context = await this.findSimilar(query, 10)
 
         if (!context || context.length === 0) {
           return 'No relevant business partner found.'
@@ -85,7 +85,7 @@ module.exports = class BusinessPartnerService extends cds.ApplicationService {
     return super.init()
   }
 
-  async findSimilar(query) {
+  async findSimilar(query, topN = 3) {
     const queryEmbedding = await this.openai.getEmbedding(query)
 
     return await SELECT.from(this.BusinessPartner)
@@ -96,6 +96,6 @@ module.exports = class BusinessPartnerService extends cds.ApplicationService {
                                           ${JSON.stringify(queryEmbedding)}
                                         )) as similarityScore`
       .orderBy`similarityScore desc`
-      .limit(3)
+      .limit(topN)
   }
 }

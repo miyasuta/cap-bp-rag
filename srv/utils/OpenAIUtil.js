@@ -15,11 +15,13 @@ class OpenAIUtil {
     }
     
     async response(query, context) {
+        console.log('Input for LLM:', `Question: ${query}\n\nContext: ${context}`)
         const response = await this.openai.responses.create({
             model: "gpt-4o-mini",
-            instructions: 'Answer the question based on the following context. If the answer cannot be found in the context, say you do not know.',
-            input: `Context: ${context}\n\nQuestion: ${query}`,
+            instructions: 'You are a helpfule assistant. Answer the question based on the following context. If the answer cannot be found in the context, say you do not know.',
+            input: `Question: ${query}\n\nContext: ${context}`,
         })
+        console.log('LLM Response:', response)
         return response.output_text
     }
 }

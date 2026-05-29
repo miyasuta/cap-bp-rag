@@ -23,9 +23,23 @@ Authorization: Basic {{username}}:{{password}}
 }
 
 ### Similarity Search
-GET {{server}}/odata/v4/business-partner/similaritySearch(query='What is the full data of business partner Yasutake?')
+POST {{server}}/odata/v4/business-partner/similaritySearch
 Authorization: Basic {{username}}:{{password}}
+Content-Type: application/json
 
-### Delete All
+{
+  "query": "What is the full data of business partner Yasutake?"
+}
+
+### Ask a Question
+POST {{server}}/odata/v4/business-partner/ask
+Authorization: Basic {{username}}:{{password}}
+Content-Type: application/json
+
+{
+  "query": "Where is Mio Yasutake located?"
+}
+
+### Danger! Delete All
 POST {{server}}/odata/v4/business-partner/deleteAll
 Content-Type: application/json

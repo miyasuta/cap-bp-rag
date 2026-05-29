@@ -20,13 +20,13 @@ service BusinessPartnerService {
       textEmbedding
     };
 
-  function similaritySearch(query: String) returns array of {
+  action similaritySearch(query: String) returns array of {
     businessPartnerID : String(10);
     fullData          : String(1000);
     similarityScore   : String;
   }
 
-  function askQuestion(question: String) returns String;
+  action ask(query: String) returns String;
 
   action deleteAll() returns String;
 }

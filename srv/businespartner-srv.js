@@ -39,20 +39,22 @@ module.exports = class BusinessPartnerService extends cds.ApplicationService {
     this.on('similaritySearch', async (req) => {
       const { query } = req.data
       console.log('On similaritySearch', query)
+      return await this.findSimilar(query)
+    })
+
+    this.on('ask', async (req) => {
+      const { query } = req.data
+      const context = await this.findSimilar(query)
+      
+      if (!context || context.length === 0) {
+        return 'No relevant business partner found.'
+      }
+
+      console.log('Context for question:', context)
 
       const openai = new OpenAIUtil()
-      const queryEmbedding = await openai.getEmbedding(query)
-
-      const result = await SELECT.from(BusinessPartner)
-        .columns`businessPartnerID, 
-                                            fullData, 
-                                            cosine_similarity(
-                                              textEmbedding, to_real_vector(
-                                              ${JSON.stringify(queryEmbedding)}
-                                            )) as similarityScore`
-        .orderBy`similarityScore desc`
-        .limit(3)
-      return result
+      const answer = await openai.response(query, JSON.stringify(context))
+      return answer
     })
 
     this.on('deleteAll', async (req) => {
@@ -61,6 +63,22 @@ module.exports = class BusinessPartnerService extends cds.ApplicationService {
       await DELETE.from(BusinessPartner)
       return 'All business partners deleted'
     })
+
+    this.findSimilar = async (query) => {
+      const openai = new OpenAIUtil()
+      const queryEmbedding = await openai.getEmbedding(query)
+
+      const result = await SELECT.from(BusinessPartner)
+        .columns`businessPartnerID, 
+                                          fullData, 
+                                          cosine_similarity(
+                                            textEmbedding, to_real_vector(
+                                            ${JSON.stringify(queryEmbedding)}
+                                          )) as similarityScore`
+        .orderBy`similarityScore desc`
+        .limit(3)
+      return result
+    }
 
     return super.init()
   }

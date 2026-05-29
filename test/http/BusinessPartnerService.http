@@ -40,6 +40,15 @@ Content-Type: application/json
   "query": "Where is Mio Yasutake located?"
 }
 
+
+
+
+
+
+
+
+
+
 ### Danger! Delete All
 POST {{server}}/odata/v4/business-partner/deleteAll
 Content-Type: application/json

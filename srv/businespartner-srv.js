@@ -1,11 +1,15 @@
 const cds = require('@sap/cds')
 const { OpenAIUtil } = require('./utils/OpenAIUtil')
 
+const LOG = cds.log('bp-rag')
+
 module.exports = class BusinessPartnerService extends cds.ApplicationService {
   async init() {
     const { BusinessPartners } = cds.entities('BusinessPartnerService')
-    const db = await cds.connect.to('db')
-    const { BusinessPartner } = db.entities
+    this.db = await cds.connect.to('db')
+    this.openai = new OpenAIUtil()
+    const { BusinessPartner } = this.db.entities
+    this.BusinessPartner = BusinessPartner
 
     this.on('CREATE', BusinessPartners, async (req, next) => {
       const bp = req.data
@@ -14,7 +18,15 @@ module.exports = class BusinessPartnerService extends cds.ApplicationService {
       // convert string to embedding
       const s = bp.textEmbeddingStr;
       if (s) {
-        const arr = JSON.parse(s);  // [num, num, ...]
+        let arr;
+        try {
+          arr = JSON.parse(s);  // [num, num, ...]
+        } catch (e) {
+          return req.reject(400, `textEmbeddingStr is not valid JSON: ${e.message}`);
+        }
+        if (!Array.isArray(arr)) {
+          return req.reject(400, 'textEmbeddingStr must be a JSON array of numbers');
+        }
         // if (arr.length !== 1536) {
         //   req.reject(400, `Expected 1536 dims, got ${arr.length}`);
         // }
@@ -38,48 +50,52 @@ module.exports = class BusinessPartnerService extends cds.ApplicationService {
 
     this.on('similaritySearch', async (req) => {
       const { query } = req.data
-      console.log('On similaritySearch', query)
-      return await this.findSimilar(query)
+      LOG.info('similaritySearch', query)
+      try {
+        return await this.findSimilar(query)
+      } catch (e) {
+        LOG.error('similaritySearch failed', e)
+        return req.reject(502, 'Failed to perform similarity search')
+      }
     })
 
     this.on('ask', async (req) => {
       const { query } = req.data
-      const context = await this.findSimilar(query)
-      
-      if (!context || context.length === 0) {
-        return 'No relevant business partner found.'
+      try {
+        const context = await this.findSimilar(query)
+
+        if (!context || context.length === 0) {
+          return 'No relevant business partner found.'
+        }
+
+        LOG.debug('Context for question:', context)
+
+        return await this.openai.response(query, JSON.stringify(context))
+      } catch (e) {
+        LOG.error('ask failed', e)
+        return req.reject(502, 'Failed to generate answer')
       }
-
-      console.log('Context for question:', context)
-
-      const openai = new OpenAIUtil()
-      const answer = await openai.response(query, JSON.stringify(context))
-      return answer
     })
 
     this.on('deleteAll', async (req) => {
-      const db = await cds.connect.to('db')
-      const { BusinessPartner } = db.entities
       await DELETE.from(BusinessPartner)
       return 'All business partners deleted'
     })
 
-    this.findSimilar = async (query) => {
-      const openai = new OpenAIUtil()
-      const queryEmbedding = await openai.getEmbedding(query)
-
-      const result = await SELECT.from(BusinessPartner)
-        .columns`businessPartnerID, 
-                                          fullData, 
-                                          cosine_similarity(
-                                            textEmbedding, to_real_vector(
-                                            ${JSON.stringify(queryEmbedding)}
-                                          )) as similarityScore`
-        .orderBy`similarityScore desc`
-        .limit(3)
-      return result
-    }
-
     return super.init()
+  }
+
+  async findSimilar(query) {
+    const queryEmbedding = await this.openai.getEmbedding(query)
+
+    return await SELECT.from(this.BusinessPartner)
+      .columns`businessPartnerID,
+                                        fullData,
+                                        cosine_similarity(
+                                          textEmbedding, to_real_vector(
+                                          ${JSON.stringify(queryEmbedding)}
+                                        )) as similarityScore`
+      .orderBy`similarityScore desc`
+      .limit(3)
   }
 }

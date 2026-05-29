@@ -1,4 +1,7 @@
+const cds = require('@sap/cds')
 const OpenAI = require('openai')
+
+const LOG = cds.log('openai')
 
 class OpenAIUtil {
     constructor() {
@@ -15,13 +18,13 @@ class OpenAIUtil {
     }
     
     async response(query, context) {
-        console.log('Input for LLM:', `Question: ${query}\n\nContext: ${context}`)
+        LOG.debug('Input for LLM:', `Question: ${query}\n\nContext: ${context}`)
         const response = await this.openai.responses.create({
             model: "gpt-4o-mini",
-            instructions: 'You are a helpfule assistant. Answer the question based on the following context. If the answer cannot be found in the context, say you do not know.',
+            instructions: 'You are a helpful assistant. Answer the question based on the following context. If the answer cannot be found in the context, say you do not know.',
             input: `Question: ${query}\n\nContext: ${context}`,
         })
-        console.log('LLM Response:', response)
+        LOG.debug('LLM Response:', response)
         return response.output_text
     }
 }

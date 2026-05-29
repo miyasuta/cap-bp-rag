@@ -23,7 +23,7 @@ service BusinessPartnerService {
   action similaritySearch(query: String) returns array of {
     businessPartnerID : String(10);
     fullData          : String(1000);
-    similarityScore   : String;
+    similarityScore   : Double;
   }
 
   action ask(query: String) returns String;

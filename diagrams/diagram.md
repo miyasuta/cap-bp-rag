@@ -14,7 +14,7 @@ flowchart LR
     end
   end
 
-  Client -->|ask| CAP
+  Client -->|ask| CAP∂
   Solace -->|event| CI
   CI -->|create embedding| OpenAI
   CI -->|insert + embedding| CAP
